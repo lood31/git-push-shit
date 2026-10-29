@@ -1,0 +1,4 @@
+__pycache__/
+demo/victim/
+demo/remote.git/
+*.log
