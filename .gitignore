@@ -2,3 +2,6 @@ __pycache__/
 demo/victim/
 demo/remote.git/
 *.log
+
+# Private plans, acceptance transcripts and raw model responses
+.tmp/

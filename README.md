@@ -1,114 +1,195 @@
 # git push shit
 
-**A ghost that lives in your git repo — and yes, the command is literal.**
+**让一个礼貌的幽灵住进你的 Git 仓库。**
 
-Install it in a repository, add a remote named `shit`, and `git push shit`
-does exactly what it says: every push, a dead senior maintainer who never
-left the codebase plants 💩 in your comments — taunting whispers generated
-by a local LLM, armed with a rap sheet of your real sins (the TODO you
-abandoned 44 days ago, the variable you renamed three times, the commit
-you just called `fix`). The haunting escalates. It keeps a diary. It signs
-its commits. You can measure it. You can exorcise it. Mostly.
+它会留下代码旁注、虚构前辈的留言、幽灵形状的代码文件，还会写日记、给自己的提交签名。你可以手动召唤它，也可以让它在指定的 push 或后台活动后出现。
 
-Built for DEV's *Ghost in the Machine* challenge: the ghost's voice is a
-local open-weight model (Gemma via llama.cpp). Its brain, however, is
-rules — see *Design* below for why, with receipts.
+**[中文](README.md) · [English](README.en.md)**
 
-## The operator console
+> 这是一个娱乐性开发工具，不是可信的代码审查器。只在自己的仓库或明确获准的测试项目中使用，先在沙盒体验。它会修改文件并创建 Git 提交；模型也可能说错话。
 
-You don't chat with the ghost. You *operate* on it, from a terminal panel:
+## 功能一览
 
-```
-==================================================================
-  💩 GIT PUSH SHIT — OPERATOR CONSOLE
-==================================================================
-  MODEL   : http://127.0.0.1:8092  [gemma]  ● CONNECTED
-  TARGET  : /path/to/victim-repo
-  LEVEL   : Lv3
-  PLANTED : 5
-  LAST    : 2026-10-29 00:45:46
-  WATCH   : RUNNING (pid 6823, every 5s, 1 planted)
-------------------------------------------------------------------
-  connect [endpoint] [model] · target <path> · haunt ·
-  haunt bg [sec] · stop · meter · diary · exorcise · status · quit
-==================================================================
-```
+| 功能 | 说明 |
+| --- | --- |
+| 交互式控制台 | 查看状态、选择仓库、连接模型、召唤、停用；历史输出不会自动清屏 |
+| 手动召唤 | `haunt` 立即植入一轮并创建提交，不必开启自动触发 |
+| Push 触发 | 安装后，仅向名为 `shit` 的 remote 推送时尝试触发 |
+| 后台监视 | `haunt bg` 启动独立进程，检测目标仓库活动后按概率触发 |
+| 中文 / English / mixed | 界面支持中文、英文；内容还支持中英混合，二者独立设置 |
+| 本地模型 | 连接 OpenAI 兼容聊天接口，支持模型发现、连接诊断与目标级配置 |
+| 内容差异化 | 从已提交代码提取素材、轮换观察重点，检查近期重复与明显近似 |
+| 来源可追踪 | 区分模型输出、模板回退与静默标记；可选保存实际请求和原始回复 |
+| 驱鬼与卸载 | 可以清理植入并留下彩蛋，也可以彻底关闭自动触发、恢复原 hook |
 
-- `connect` — point it at your local llama.cpp server (tested with a
-  real call; the light only turns green when the model answers).
-- `target <path>` — aim at a project. A teammate's repo is the classic.
-- `haunt` — plant one haunting right now, and optionally arm the
-  pre-push hook so the ghost keeps working on every push.
-- `haunt bg [sec]` — leave a **detached watcher**: close the terminal,
-  the ghost stays. It polls the target, and when the victim commits,
-  it rolls the dice and plants — silently, windowless.
-- `meter` — the shit-meter: totals by form, most haunted file, level.
-- `diary` — read the ghost's diary (it is not in the repo root; find it).
-- `exorcise` — remove everything, stop the watcher, receive an epitaph
-  written by the ghost itself. One whisper always survives. It is the
-  seed of the next haunting.
+### 五种逐步出现的形态
 
-Non-interactive subcommands (`install`, `meter`, `exorcise`, `watch`)
-exist for the hook and for scripting.
+等级随成功闹鬼次数提升，最高 Lv5：
 
-## The five forms of shit
+1. **Lv1 · 低语旁注**：根据仓库材料生成短评，或在模型不可用时留下静默的 💩。
+2. **Lv2 · 虚构前辈**：植入带有虚构维护者口吻的历史旁注，不冒充真实人物。
+3. **Lv3 · 代码幽灵**：在新文件中生成幽灵轮廓的代码，不主动运行它。
+4. **Lv4 · 幽灵日记**：在子目录留下现场札记，可在面板中阅读。
+5. **Lv5 · 提交签名**：植入提交使用幽灵作者身份和 `Haunted-by` 尾注。
 
-1. **Whispers** (Lv1) — taunting comments in the ghost's voice, generated
-   by the local model from a *sin report* extracted from your diff and
-   history: renames, commented-out code, `fix` / `final-v3` commit
-   messages, TODO ages, the hour you push at.
-2. **Fake predecessors** (Lv2) — legacy comments from maintainers who
-   never existed: `// There is a reason it's written this way. The
-   reason is from 1997 and it is gone. — E.B.`
-3. **Ghost-shaped code** (Lv3) — real, runnable source code typeset into
-   a ghost silhouette, IOCCC-style, planted as a new file in a random
-   corner. Run it and it speaks.
-4. **The ghost's diary** (Lv4) — a first-person sighting log disguised as
-   an unremarkable notes file in a random subdirectory. Never the root.
-5. **Commit signature** (Lv5) — planting commits authored by
-   `the previous maintainer (deceased)`, carrying the trailer
-   `Haunted-by: the previous maintainer (deceased)`.
+结构、路径、Git 操作由规则决定；模型负责文案，不负责执行任意命令。
 
-Language is configurable (`zh` / `en` / `mixed`): the ghost taunts in
-the tongue you fear most.
+## 安装要求
 
-## The polite ghost (auditable in one file)
+- **Python 3.10+**，运行时只使用标准库，不必安装 Python 第三方依赖。
+- **Git**，需支持 `git hook run --to-stdin`。
+- 可选：提供 **OpenAI 兼容接口**的本地聊天模型服务。使用代码素材时，服务还需支持 `response_format: json_object`。
 
-The whole tool is a single Python file, standard library only — read it
-and check the promise yourself:
-
-- It only ever writes **comments, docs, new files, and commit messages**.
-  It never modifies existing executable code.
-- The hook **fails open**: any error, and your push proceeds untouched.
-  The watcher likewise skips a round rather than ever jamming a repo.
-- No model server? The ghost plants silent 💩 and notes its mute night
-  in the diary. The haunting degrades; it does not die.
-
-## Design: decisions by rules, voice by the model
-
-This is deliberate, and it is measured, not vibes. In a separate research
-project we benchmarked small local models (Gemma 3 1B/4B, Qwen2.5-1.5B)
-as free-text adjudicators over structured memory operations: parse
-failure rates were **0.89–0.93** across three models and two frozen
-prompt versions — each model failed differently. So in this tool the
-model never decides anything structural. Rules decide *what* happens;
-the model only decides *how cruelly to say it*.
-
-## Requirements & quick start
-
-- Python 3.10+, git. Optional but recommended: a local llama.cpp server
-  (`llama-server`) with an open-weight chat model.
-- Clone this repo, then:
+本轮实测环境为 Windows、Python 3.13、Git 2.55。代码通过 Python 3.10 语法检查，但不等同于已完成所有 Python 版本及操作系统的运行测试。
 
 ```bash
-python3 push_shit.py            # open the operator console
-# or, in the repo you want haunted:
-python3 /path/to/push_shit.py install
-git push shit                   # literal. enjoy.
+git clone https://github.com/lood31/git-push-shit.git
+cd git-push-shit
+python push_shit.py
 ```
 
-State lives under the target's `.git/push-shit/` (config, ledger,
-watcher). Nothing is written outside the target repo and its `.git`.
+Linux/macOS 如需区分 Python 版本，可将命令中的 `python` 换成 `python3`。
 
-*For pranking only repos you own or teammates who will forgive you.
-The ghost is patient; make sure your friendships are too.*
+## 快速上手：先手动体验
+
+打开控制台后，**先选择测试仓库**，不要误把工具源码仓库当作目标：
+
+```text
+target "D:/my-test-project"
+lang zh
+connect http://127.0.0.1:8092
+/help haunt
+haunt
+meter
+diary
+```
+
+以上命令在 `panel »` 后输入，不是在系统终端直接输入。
+
+- `connect` 的地址应替换为你实际启动的服务；工具不会下载或启动模型。
+- 省略模型 ID 时，会通过 `/v1/models` 发现模型；有多个候选时需明确指定。
+- 只在真实聊天请求成功后显示已连接，而非仅检查服务是否存活。
+- 首次 `haunt` 可能询问是否安装自动 hook，**默认是 n**。只想手动体验就保持 n。
+- 日记从 Lv4 开始出现；前几轮看不到日记是正常现象。
+
+也可以显式指定模型，根地址与 `/v1` 地址均支持：
+
+```text
+connect http://127.0.0.1:8092/v1 your-model-id
+```
+
+默认 endpoint 为 `http://127.0.0.1:8092`，默认模型名为 `gemma`；它们只是默认值，不保证你的服务使用相同配置。
+
+## 控制台命令
+
+| 命令 | 用途 |
+| --- | --- |
+| `help`、`/help` | 全部命令说明；`/help <命令>` 查看示例和副作用 |
+| `target <path>` | 选择目标 Git 仓库，含空格路径请加引号 |
+| `connect [endpoint] [model]` | 连接、验证并保存当前目标的模型配置 |
+| `lang` | 查看界面语言和内容语言 |
+| `lang zh` / `lang en` | 同时切换界面与内容 |
+| `lang mixed` | 只将内容切为中英混合 |
+| `lang ui zh\|en` | 只切换界面语言 |
+| `lang content zh\|en\|mixed` | 只切换生成内容语言 |
+| `haunt` | 手动植入一轮并提交 |
+| `haunt bg [sec]` | 启动后台监视，默认 60 秒，最短 5 秒 |
+| `stop` | 停止目标仓库的后台监视，不卸载 hook |
+| `meter` | 查看等级、次数和植入统计 |
+| `diary` | 阅读已有日记 |
+| `exorcise` | 清理已登记植入，尝试留下一个安全彩蛋；**不是卸载** |
+| `uninstall` | 停止监视、清理登记内容、关闭自动触发并恢复原 hook，不留新彩蛋 |
+| `status` | 追加显示完整状态 |
+| `quit` / `exit` / `leave` | 退出控制台，**不会停止后台进程或卸载 hook** |
+
+目标配置保存在该仓库的 `.git/push-shit/` 中。语言、连接与安装状态分开保存；切语言不会安装 hook、启动后台或创建提交。没有目标时，界面语言可临时切换，但内容语言及持久化设置需要目标仓库。
+
+## 启用 Push 自动触发
+
+先在控制台选中目标并连接模型，再在安装询问中选择开启；也可以在**目标仓库目录**运行：
+
+```bash
+python /path/to/git-push-shit/push_shit.py install --lang zh --probability 0.7
+git remote -v
+git push shit HEAD:main
+```
+
+Windows 可使用 `python "D:/tools/git-push-shit/push_shit.py" install --lang zh`。
+
+- `install` 会安装 pre-push wrapper；需要创建 `shit` remote 时，使用目标仓库的 `origin` 地址。**先检查 remote，确认推送目的地。**已有的用户 remote 不会被擅自改写。
+- 默认自动触发概率为 `0.7`；手动 `haunt` 不靠概率决定是否尝试。
+- 只有 `shit` push 触发幽灵；向 `origin` 等其他 remote 推送不会触发。
+- **新鬼提交在下一次 push 才发送。**当前 push 的引用在 hook 执行前已确定；工具不会为发送新提交递归 push 或重写历史。
+- 后台监视独立于 push hook。关闭窗口不等于停止监视；请使用 `stop` 或 `uninstall`。
+
+## 驱鬼不等于卸载
+
+| 操作 | 停止后台 | 清理登记植入 | 留下新彩蛋 | 后续 `shit` push 还能触发 |
+| --- | --- | --- | --- | --- |
+| `stop` | 是 | 否 | 否 | 是，若已安装 |
+| `exorcise` | 是 | 是，保留用户修改 | 尝试留下 | 是，若已安装 |
+| `uninstall` | 是 | 是，保留用户修改 | 否 | 否 |
+
+工具会保留用户修改、所有权不明的文件、被改动的 hook/remote，并给出提示。只移除已知由本工具创建且未被改动的 remote；不会删除原有提交历史。清理行为也可能创建新的清理提交，提交前后都请自行检查 diff。
+
+## 模型输出与边界
+
+### 如何减少重复
+
+- 优先使用**已提交 Git 对象中的代码**，不是脏工作区里的临时修改。
+- 轮换近期未点评过的行为，而不只是换函数名、路径或“技术债”的说法。
+- 检查最近 **30 条成功、非静默主留言**；驱鬼后历史仍可用于去重。
+- 规范化、相似度与短文本覆盖检查用于拒绝重复及明显近似。
+- 主留言最多 3 次模型请求，共用递减的请求超时预算；mixed 可组合两个真实模型子句。日记另有重试、来源和近期历史检查。
+- 对日记中未闭合的行内代码等已知不完整输出进行拒绝，不把半句当成成功。
+
+**不能保证每次意思都不同，也不保证永久不重复。**检查是局部启发式，不是通用语义去重器；素材少、历史窗口有限或模型能力不足时，仍可能复读、回退或跳过。
+
+### 来源诚实，不把模板算成模型
+
+界面会标记 `[模型]` / `[事实回退]`，英文界面对应 `[model]` / `[template]`。模型不可用时，保留静默 💩 行为；模板、静默和跳过都不是“真实模型生成成功”。
+
+使用代码素材时，请求采用 `reference`、`observation`、`text` 结构。引用会与源代码校验，但 **observation 也是模型自述，不能证明最终文案正确**。主留言与日记均事实优先、幽默可选；这只是生成要求，不是事实正确性保证。
+
+> 模型可能误解返回值、异常、类型和求值顺序。不要根据它的留言修改生产代码，也不要把它当成可靠的审查意见。
+
+### 超时不是严格墙钟截止
+
+`PUSH_SHIT_TIMEOUT` 默认 30 秒，控制剩余请求超时预算。它不是对异常慢速分块 HTTP 的严格总时长取消保证；日记、健康检查和 Git 操作也不能算进“单条留言必在 30 秒完成”的承诺。
+
+## 安全与隐私
+
+- **原质量门禁优先**：保留现有 pre-push hook 的参数、输入和失败状态，兼容目标仓库的 `core.hooksPath`；不会为了闹鬼绕过原门禁。
+- 原门禁通过后，幽灵自身的故障按 fail-open 处理，避免仅因模型故障阻断正常 push。
+- 规则限制植入位置与形式；保护用户已有文件名、修改过的内容和不明所有权资源。模型不能决定任意 Git/系统命令。
+- 代码素材有大小、数量和敏感内容过滤，但**不能保证发现所有秘密**。只连接可信服务，谨慎用于含有业务代码或凭据的仓库。
+- `PUSH_SHIT_TRACE=1` 可将实际 prompt、原始回复和触发信息写入目标 `.git/push-shit/model-trace.jsonl`，**默认关闭**。日志包含代码和模型输出，不应公开业务仓库日志。
+- 不自动下载模型、不启动模型服务、不主动推送远端、不改写提交历史。
+
+## 开发与测试
+
+运行标准库回归测试：
+
+```bash
+python -B -m unittest discover -s tests -v
+```
+
+可选静态检查：
+
+```bash
+python -m pip install ruff
+python -m ruff check .
+git diff --check
+```
+
+当前版本已通过 151 项测试。本地还完成了一组**连续 10 次手动召唤 + 10 次真实本地 push**：20 条主留言、17 篇日记均来自模型，经独立逐条复核支持内容差异与完整性门槛通过；英文、mixed 各另测 3 条。
+
+**这只是本轮样本的结果，不是今后每次都不同、每条解释都正确的保证。**种子/墓志铭的模板回退未计作模型成功。
+
+可复用实机入口为 `python -B -m tests.playground_qa --help`。该脚本当前按 Windows 授权沙盒 `D:/git-push-shit-playground` 设计，需要在源码仓库先保存可用连接配置，且会创建合成仓库、本地 bare remote、hook 和提交；不要指向业务仓库。验收后用同一入口的 `--cleanup --target <path>` 卸载。自动门槛通过仍须阅读实际正文，不能仅凭编号、字符串唯一或返回码判断语义不同。
+
+私有计划、运行日志和模型原始回复位于 `.tmp/`，不随源码发布。
+
+## License
+
+[MIT](LICENSE)。最初为 DEV 的 *Ghost in the Machine* 挑战制作。
